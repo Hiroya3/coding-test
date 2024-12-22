@@ -7,6 +7,6 @@ import (
 )
 
 type InvoiceRepository interface {
-	Persist(ctx context.Context, invoice entity.Invoice) error
+	Persist(ctx context.Context, invoice entity.Invoice) (entity.Invoice, error)
 	List(ctx context.Context, companyID entity.CompanyID, fromDate, toDate time.Time) ([]entity.Invoice, error)
 }

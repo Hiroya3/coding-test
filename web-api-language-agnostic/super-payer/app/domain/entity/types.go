@@ -6,6 +6,7 @@ type InvoiceID int
 type ClientID int
 type CompanyID int
 type BankIDAccountID int
+type UserID int
 type Status int
 
 const (
