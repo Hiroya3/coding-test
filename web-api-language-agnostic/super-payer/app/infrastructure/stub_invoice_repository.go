@@ -34,9 +34,21 @@ func (i stubInvoiceRepository) Persist(ctx context.Context, invoice entity.Invoi
 	), nil
 }
 
-func (i stubInvoiceRepository) List(ctx context.Context, companyID entity.CompanyID, fromDate, toDate time.Time) ([]entity.Invoice, error) {
-	//TODO implement me
-	panic("implement me")
+func (i stubInvoiceRepository) ListByDuration(ctx context.Context, companyID entity.CompanyID, fromDate, toDate time.Time) ([]entity.Invoice, error) {
+	result := make([]entity.Invoice, 0)
+
+	for _, invoice := range stubInvoices {
+		if companyID != invoice.InvoiceCompany.CompanyID {
+			continue
+		}
+
+		// 期間内かどうか
+		if !time.Time(invoice.PaymentDueDate).Before(fromDate) && !time.Time(invoice.PaymentDueDate).After(toDate) {
+			result = append(result, invoice)
+		}
+	}
+
+	return result, nil
 }
 
 var stubInvoices = []entity.Invoice{

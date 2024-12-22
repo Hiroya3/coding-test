@@ -8,7 +8,11 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"net/http"
+	"super-payer/app/domain/entity"
+	"super-payer/app/infrastructure"
+	"super-payer/app/usecase"
 	pkgErr "super-payer/pkg/error"
+	pkgLog "super-payer/pkg/log"
 	"time"
 )
 
@@ -40,8 +44,8 @@ type postInvoiceResponse struct {
 }
 
 type listInvoiceRequest struct {
-	FromDate string `json:"from_date"`
-	ToDate   string `json:"to_date"`
+	FromDate time.Time `json:"from_date"`
+	ToDate   time.Time `json:"to_date"`
 }
 
 type ListInvoiceResponse struct {
@@ -142,17 +146,28 @@ func postInvoice(c echo.Context) error {
 
 // listInvoices : 指定期間内で、userIDが所属する企業の請求書一覧を返す（ページングなし）
 func listInvoices(c echo.Context) error {
+
+	logger := pkgLog.NewLogger()
+
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*jwtCustomClaims)
 	userID := claims.UserID
 
+	ctx := c.Request().Context()
+	ctx = pkgLog.ContextWithUserID(ctx, userID)
+
 	var request listInvoiceRequest
-	if err := c.Bind(&request); err != nil {
-		return err
+	if e := c.Bind(&request); e != nil {
+		return convertRes(c, nil, e)
 	}
 
-	// TODO usecaseと繋ぎこむ
-	return convertRes(c, fmt.Sprintf("User ID: %d", userID), nil)
+	// TODO wire化する
+	u := usecase.NewInvoiceUseCase(logger, infrastructure.NewStubInvoiceRepository(logger), infrastructure.NewStubCompanyRepository(logger))
+	data, err := u.ListByUserIDAndDate(ctx, entity.UserID(userID), request.FromDate, request.ToDate)
+	if err != nil {
+		return convertRes(c, nil, err)
+	}
+	return convertRes(c, convertListInvoice(data), nil)
 }
 
 func main() {
@@ -202,4 +217,9 @@ func convertRes(c echo.Context, res any, err error) error {
 	}
 
 	return c.JSON(http.StatusInternalServerError, res)
+}
+
+func convertListInvoice(invoices []entity.Invoice) []InvoiceResponse {
+	// TODO implement
+	return nil
 }

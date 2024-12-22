@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"context"
 	"super-payer/app/domain/entity"
 	"super-payer/app/domain/repository"
 	"super-payer/pkg/log"
@@ -16,7 +17,7 @@ func NewStubCompanyRepository(logger log.Logger) repository.CompanyRepository {
 	}
 }
 
-func (i stubCompanyRepository) GetByUserID(_ entity.UserID) (entity.Company, error) {
+func (i stubCompanyRepository) GetByUserID(_ context.Context, _ entity.UserID) (entity.Company, error) {
 	return entity.Company{
 		CompanyID:          entity.CompanyID(1),
 		CompanyName:        "株式会社A",

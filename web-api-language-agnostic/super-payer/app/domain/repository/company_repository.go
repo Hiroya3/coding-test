@@ -1,7 +1,10 @@
 package repository
 
-import "super-payer/app/domain/entity"
+import (
+	"context"
+	"super-payer/app/domain/entity"
+)
 
 type CompanyRepository interface {
-	GetByUserID(userID entity.UserID) (entity.Company, error)
+	GetByUserID(ctx context.Context, userID entity.UserID) (entity.Company, error)
 }
